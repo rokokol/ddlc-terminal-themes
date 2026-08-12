@@ -45,6 +45,11 @@
       # filename. There is deliberately no module behind them: readFile or a source = is the
       # whole integration
       #   kitty.extraConfig = builtins.readFile ddlc-terminal-themes.lib.kitty.dark;
+      # Both applications read a theme out of ~/.config, so the module is the two settings that
+      # name it — which is the half a consumer keeps getting wrong. lib below stays for a
+      # configuration that would rather place the files itself
+      homeManagerModules.default = import ./nix/module.nix { inherit self; };
+
       lib = {
         kitty = {
           light = ./dist/ddlc-kitty-light.conf;
@@ -85,6 +90,43 @@
           diff -r ${dist} dist
           touch $out
         '';
+
+        # Enabling a switch has to be enough: the colours in kitty's config after its own
+        # settings, both btop variants deployed and the theme named — and nothing while disabled
+        module-wiring =
+          let
+            wiring = import ./nix/module-test.nix {
+              inherit (nixpkgs) lib;
+              module = self.homeManagerModules.default;
+            };
+          in
+          pkgs.runCommand "module-wiring"
+            {
+              nativeBuildInputs = [ pkgs.jq ];
+              dump = builtins.toJSON wiring;
+              passAsFile = [ "dump" ];
+            }
+            ''
+              want() { jq -e "$1" "$dumpPath" >/dev/null || { echo "module wiring: $2"; exit 1; }; }
+
+              want '.kitty | test("background #222222")' "the dark colours do not reach kitty"
+              want '.kittyLight | test("background #FFFFFF")' "the variant does not reach kitty"
+              # kitty takes the last word for a key, so the theme has to land after any setting
+              # the consumer wrote next to the module
+              want '.kittyOrder | test("#123456[\\s\\S]*#222222")' "the colours do not land last"
+
+              want '.btopFiles | index("btop/themes/ddlc-dark.theme")' "the dark theme is not deployed"
+              # Both go in whatever the variant is: btop lists its themes directory, so the other
+              # one is a keypress away in its own menu
+              want '.btopFiles | index("btop/themes/ddlc-light.theme")' "the light theme is not deployed"
+              want '.btopTheme == "ddlc-dark"' "btop does not name the theme"
+              want '.btopThemeLight == "ddlc-light"' "the variant does not reach btop"
+
+              want '.offKitty == ""' "kitty is themed while disabled"
+              want '.offFiles == []' "a theme is deployed while disabled"
+              want '.offTheme == null' "btop is themed while disabled"
+              touch $out
+            '';
 
         # The generator is the repository as much as dist/ is, so its lint is a check like any
         # other — CI then runs nothing that a local nix flake check does not

@@ -28,7 +28,7 @@ nix build github:rokokol/ddlc-terminal-themes && cat result/share/ddlc-terminal-
 
 - [Как выглядит](#как-выглядит)
 - [Установка](#установка)
-  - [Nix](#nix)
+  - [Home Manager](#home-manager)
   - [Любой другой дистрибутив](#любой-другой-дистрибутив)
 - [Куда идут слоты](#куда-идут-слоты)
 - [Перегенерация](#перегенерация)
@@ -45,24 +45,30 @@ nix build github:rokokol/ddlc-terminal-themes && cat result/share/ddlc-terminal-
 
 ## Установка
 
-### Nix
-
-Флейк отдаёт пути, а не модуль — вся интеграция это `readFile` или `source =`:
+### Home Manager
 
 ```nix
 {
   inputs.ddlc-terminal-themes.url = "github:rokokol/ddlc-terminal-themes";
 
-  # kitty: цвета ложатся после settings, а для одного ключа kitty берёт последнее слово
-  programs.kitty.extraConfig = builtins.readFile inputs.ddlc-terminal-themes.lib.kitty.dark;
+  # в home-конфигурации
+  imports = [ inputs.ddlc-terminal-themes.homeManagerModules.default ];
 
-  # btop: имя файла и есть имя темы
-  xdg.configFile."btop/themes/ddlc-dark.theme".source = inputs.ddlc-terminal-themes.lib.btop.dark;
-  programs.btop.settings.color_theme = "ddlc-dark";
+  ddlc.kitty.enable = true;
+  ddlc.btop.enable = true;
 }
 ```
 
-Есть `lib.kitty.{light,dark}` и `lib.btop.{light,dark}`, а `packages.default` раскладывает те же четыре файла в `share/ddlc-terminal-themes/`
+По переключателю на приложение, потому что подключаются они по-разному, и ошибаются как раз в подключении:
+
+| опция | | по умолчанию |
+| --- | --- | --- |
+| `kitty.enable` | цвета в `kitty.conf`, после твоих собственных настроек — для одного ключа kitty берёт последнее слово | `false` |
+| `kitty.variant` | `light` или `dark` | `dark` |
+| `btop.enable` | обе темы в `~/.config/btop/themes/` и одна из них в `btop.conf` | `false` |
+| `btop.variant` | какая именно названа. Вторая всё равно кладётся — btop показывает этот каталог, так что она в одном нажатии в его же меню | `dark` |
+
+**Без модуля.** `lib.kitty.{light,dark}` и `lib.btop.{light,dark}` — пути, так что положить их можно самому через `readFile` или `source =`; `packages.default` раскладывает те же четыре файла в `share/ddlc-terminal-themes/`
 
 ### Любой другой дистрибутив
 
@@ -102,12 +108,13 @@ nix develop -c ./generate.sh
 
 ## Проверки
 
-`nix flake check` доказывает, что `dist/` — это то, что `generate.sh` пишет сегодня, что каждое значение в нём хекс и таблица ANSI целая, а два скрипта проходят shellcheck и shfmt
+`nix flake check` доказывает, что `dist/` — это то, что `generate.sh` пишет сегодня, что каждое значение в нём хекс и таблица ANSI целая, что модуль подключает оба приложения (и не трогает ни одного, когда выключен), а два скрипта проходят shellcheck и shfmt
 
 ## Структура
 
 ```
 generate.sh   раскладка: на входе слоты base16, на выходе два конфига на вариант
+nix/          module.nix, module-test.nix
 dist/         отрендеренные темы, закоммичены для тех, у кого нет Nix
 install.sh    для систем без Nix
 ```

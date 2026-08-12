@@ -28,7 +28,7 @@ nix build github:rokokol/ddlc-terminal-themes && cat result/share/ddlc-terminal-
 
 - [What it looks like](#what-it-looks-like)
 - [Install](#install)
-  - [Nix](#nix)
+  - [Home Manager](#home-manager)
   - [Any other distribution](#any-other-distribution)
 - [Where the slots go](#where-the-slots-go)
 - [Re-rendering](#re-rendering)
@@ -45,24 +45,30 @@ nix build github:rokokol/ddlc-terminal-themes && cat result/share/ddlc-terminal-
 
 ## Install
 
-### Nix
-
-The flake hands out paths, not a module — `readFile` or a `source =` is the whole integration:
+### Home Manager
 
 ```nix
 {
   inputs.ddlc-terminal-themes.url = "github:rokokol/ddlc-terminal-themes";
 
-  # kitty: colours land after settings, and kitty takes the last word for a key
-  programs.kitty.extraConfig = builtins.readFile inputs.ddlc-terminal-themes.lib.kitty.dark;
+  # in your home configuration
+  imports = [ inputs.ddlc-terminal-themes.homeManagerModules.default ];
 
-  # btop: the file name is the theme name
-  xdg.configFile."btop/themes/ddlc-dark.theme".source = inputs.ddlc-terminal-themes.lib.btop.dark;
-  programs.btop.settings.color_theme = "ddlc-dark";
+  ddlc.kitty.enable = true;
+  ddlc.btop.enable = true;
 }
 ```
 
-`lib.kitty.{light,dark}` and `lib.btop.{light,dark}`, and `packages.default` lays the same four files under `share/ddlc-terminal-themes/`
+One switch per application, because the two are wired up differently and the wiring is the half that goes wrong:
+
+| option | | default |
+| --- | --- | --- |
+| `kitty.enable` | the colours into `kitty.conf`, after your own settings — kitty takes the last word for a key | `false` |
+| `kitty.variant` | `light` or `dark` | `dark` |
+| `btop.enable` | both themes into `~/.config/btop/themes/` and one of them named in `btop.conf` | `false` |
+| `btop.variant` | which one is named. The other is deployed anyway — btop lists that directory, so it is a keypress away in its own menu | `dark` |
+
+**Without the module.** `lib.kitty.{light,dark}` and `lib.btop.{light,dark}` are paths, so `readFile` or a `source =` places them yourself; `packages.default` lays the same four files under `share/ddlc-terminal-themes/`
 
 ### Any other distribution
 
@@ -102,12 +108,13 @@ The schemes come from ddlc-palette and nothing else does — the palette is meas
 
 ## Checks
 
-`nix flake check` proves that `dist/` is what `generate.sh` writes today, that every value in it is a hex colour and the ANSI table is whole, and that the two scripts pass shellcheck and shfmt
+`nix flake check` proves that `dist/` is what `generate.sh` writes today, that every value in it is a hex colour and the ANSI table is whole, that the module wires both applications up (and touches neither while disabled), and that the two scripts pass shellcheck and shfmt
 
 ## Layout
 
 ```
 generate.sh   the mapping: base16 slots in, two configs per variant out
+nix/          module.nix, module-test.nix
 dist/         the rendered themes, committed for consumers without Nix
 install.sh    for systems without Nix
 ```
