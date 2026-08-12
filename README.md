@@ -26,6 +26,7 @@ nix build github:rokokol/ddlc-terminal-themes && cat result/share/ddlc-terminal-
 
 ## Contents
 
+- [What it looks like](#what-it-looks-like)
 - [Install](#install)
   - [Nix](#nix)
   - [Any other distribution](#any-other-distribution)
@@ -34,6 +35,13 @@ nix build github:rokokol/ddlc-terminal-themes && cat result/share/ddlc-terminal-
 - [Checks](#checks)
 - [Layout](#layout)
 - [License](#license)
+
+## What it looks like
+
+![kitty running fastfetch and a directory listing](docs/screenshot-kitty.png)
+
+![btop, all four panels](docs/screenshot-btop.png)
+> The wallpaper comes through because kitty runs at `background_opacity 0.9` — neither theme sets an opacity of its own, and btop simply inherits the terminal's
 
 ## Install
 

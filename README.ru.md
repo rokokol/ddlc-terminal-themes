@@ -26,6 +26,7 @@ nix build github:rokokol/ddlc-terminal-themes && cat result/share/ddlc-terminal-
 
 ## Содержание
 
+- [Как выглядит](#как-выглядит)
 - [Установка](#установка)
   - [Nix](#nix)
   - [Любой другой дистрибутив](#любой-другой-дистрибутив)
@@ -34,6 +35,13 @@ nix build github:rokokol/ddlc-terminal-themes && cat result/share/ddlc-terminal-
 - [Проверки](#проверки)
 - [Структура](#структура)
 - [Лицензия](#лицензия)
+
+## Как выглядит
+
+![kitty с fastfetch и листингом каталога](docs/screenshot-kitty.png)
+
+![btop, все четыре панели](docs/screenshot-btop.png)
+> Обои просвечивают, потому что kitty запущен с `background_opacity 0.9` — своей прозрачности темы не задают, а btop просто наследует терминальную
 
 ## Установка
 
