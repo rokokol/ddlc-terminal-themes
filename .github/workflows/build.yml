@@ -1,0 +1,33 @@
+name: build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  nix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: cachix/install-nix-action@v31
+      - run: nix build --no-write-lock-file
+      # dist-is-current, themes-are-filled, shell-is-clean
+      - run: nix flake check --no-write-lock-file
+      # The themes must stay usable without Nix: install.sh copies dist/ into a config tree,
+      # and btop only finds a theme under the name it lands with
+      - name: install.sh works
+        run: |
+          ./install.sh --config-home "$PWD/out"
+          test -f out/kitty/ddlc-kitty-dark.conf
+          test -f out/btop/themes/ddlc-dark.theme
+      - run: nix fmt -- --ci
+
+  shell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: cachix/install-nix-action@v31
+      - run: nix run nixpkgs#shellcheck -- generate.sh install.sh
+      - run: nix run nixpkgs#shfmt -- -d -i 2 -ci generate.sh install.sh

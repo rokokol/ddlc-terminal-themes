@@ -1,0 +1,109 @@
+<div align="center">
+
+# ddlc-terminal-themes
+
+**Цвета Doki Doki Literature Club для kitty и btop, светлые и тёмные** （´ω｀♡%）
+
+![kitty](https://img.shields.io/badge/kitty-theme-72D0FA?style=flat)
+![btop](https://img.shields.io/badge/btop-theme-76C332?style=flat)
+![Nix](https://img.shields.io/badge/Nix-flake-7EBAE4?style=flat&logo=nixos&logoColor=white)
+[![palette](https://img.shields.io/badge/colours-ddlc--palette-FF80C0?style=flat)](https://github.com/rokokol/ddlc-palette)
+[![license](https://img.shields.io/badge/MIT-3DA639?style=flat)](LICENSE)
+[![build](https://github.com/rokokol/ddlc-terminal-themes/actions/workflows/build.yml/badge.svg)](https://github.com/rokokol/ddlc-terminal-themes/actions/workflows/build.yml)
+
+[English](README.md)
+
+</div>
+
+Две темы терминала, отрендеренные из base16-схем [ddlc-palette](https://github.com/rokokol/ddlc-palette), которая снимает каждый цвет с [ddlc.moe](https://ddlc.moe), а не подбирает его на глаз. Единственное, что здесь выбрано вкусом, — какой слот куда идёт
+
+Приехало из моего райса, **[rokokol/huix](https://github.com/rokokol/huix)**
+
+```sh
+# ничего не собирать и не устанавливать, просто посмотреть
+nix build github:rokokol/ddlc-terminal-themes && cat result/share/ddlc-terminal-themes/ddlc-kitty-dark.conf
+```
+
+## Содержание
+
+- [Установка](#установка)
+  - [Nix](#nix)
+  - [Любой другой дистрибутив](#любой-другой-дистрибутив)
+- [Куда идут слоты](#куда-идут-слоты)
+- [Перегенерация](#перегенерация)
+- [Проверки](#проверки)
+- [Структура](#структура)
+- [Лицензия](#лицензия)
+
+## Установка
+
+### Nix
+
+Флейк отдаёт пути, а не модуль — вся интеграция это `readFile` или `source =`:
+
+```nix
+{
+  inputs.ddlc-terminal-themes.url = "github:rokokol/ddlc-terminal-themes";
+
+  # kitty: цвета ложатся после settings, а для одного ключа kitty берёт последнее слово
+  programs.kitty.extraConfig = builtins.readFile inputs.ddlc-terminal-themes.lib.kitty.dark;
+
+  # btop: имя файла и есть имя темы
+  xdg.configFile."btop/themes/ddlc-dark.theme".source = inputs.ddlc-terminal-themes.lib.btop.dark;
+  programs.btop.settings.color_theme = "ddlc-dark";
+}
+```
+
+Есть `lib.kitty.{light,dark}` и `lib.btop.{light,dark}`, а `packages.default` раскладывает те же четыре файла в `share/ddlc-terminal-themes/`
+
+### Любой другой дистрибутив
+
+```sh
+git clone https://github.com/rokokol/ddlc-terminal-themes
+cd ddlc-terminal-themes
+./install.sh              # --kitty или --btop, если нужна одна из двух
+```
+
+Ничего не собирается: [`dist/`](dist) закоммичен, так что это копирование в `~/.config`. kitty получает оба варианта рядом с `kitty.conf`, где `include ddlc-kitty-dark.conf` уже резолвится; btop показывает тему под именем файла, поэтому по дороге отбрасывается сегмент с именем приложения и `ddlc-btop-dark.theme` кладётся как `ddlc-dark.theme`
+
+## Куда идут слоты
+
+kitty повторяет [tinted-kitty](https://github.com/tinted-theming/tinted-kitty) слот в слот с одним отступлением: тот кладёт выделение на `base03`, и `base05` на нём выходит 1.65:1, поэтому выделение несёт `base02`
+
+Для btop base16-шаблона нет нигде, так что его раскладка — собственная:
+
+| | |
+| --- | --- |
+| панели | `cpu_box` синяя, `mem_box` зелёная, `net_box` пурпурная, `proc_box` голубая — четыре акцента, чтобы взгляд попадал в нужную |
+| нагрузка | градиенты температуры, процессора и процессов растут по тёплым акцентам палитры: зелёный, потом жёлтый, потом красный |
+| счётчики | free, cached, available, used, download и upload шкалы не несут, поэтому каждый — один цвет с пустыми mid и end, как btop и записывает плоский счётчик |
+
+> [!NOTE]
+> Варианты берут разные акценты, потому что палитра поляризована: цвет, который читается на `ink`, на `paper` уже пастель. Какой ключ палитры заполняет какой слот в каждом из них — [в таблице](https://github.com/rokokol/ddlc-palette/blob/master/README.ru.md#как-тема) ddlc-palette
+
+## Перегенерация
+
+`generate.sh` читает два base16-yaml и пишет `dist/`. devShell кладёт их в окружение:
+
+```sh
+nix develop -c ./generate.sh
+./generate.sh --light base16-ddlc-light.yaml --dark base16-ddlc-dark.yaml   # без Nix
+```
+
+Схемы приходят из ddlc-palette и больше ниоткуда — измеряет палитра, а этот репозиторий только раскладывает. Еженедельный workflow перерендеривает против HEAD палитры, а не против лока, и заводит pull request, когда они разошлись: цвет не может уехать наверху и молча оставить эту тему в старом виде
+
+## Проверки
+
+`nix flake check` доказывает, что `dist/` — это то, что `generate.sh` пишет сегодня, что каждое значение в нём хекс и таблица ANSI целая, а два скрипта проходят shellcheck и shfmt
+
+## Структура
+
+```
+generate.sh   раскладка: на входе слоты base16, на выходе два конфига на вариант
+dist/         отрендеренные темы, закоммичены для тех, у кого нет Nix
+install.sh    для систем без Nix
+```
+
+## Лицензия
+
+MIT. Цвета — Team Salvato
