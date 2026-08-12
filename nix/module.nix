@@ -17,6 +17,10 @@ let
   ];
 in
 {
+  # A module is deduplicated by its key, and a function module's key is where it was imported
+  # from — so two files importing this one would each declare every option below
+  key = "ddlc-terminal-themes";
+
   options.ddlc = {
     kitty = {
       enable = lib.mkEnableOption "the DDLC kitty colours";
