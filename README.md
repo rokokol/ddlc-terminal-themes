@@ -11,8 +11,6 @@
 [![license](https://img.shields.io/badge/MIT-3DA639?style=flat)](LICENSE)
 [![build](https://github.com/rokokol/ddlc-terminal-themes/actions/workflows/build.yml/badge.svg)](https://github.com/rokokol/ddlc-terminal-themes/actions/workflows/build.yml)
 
-[Русский](README.ru.md)
-
 </div>
 
 Two terminal themes rendered out of the base16 schemes in [ddlc-palette](https://github.com/rokokol/ddlc-palette), which measures every colour off [ddlc.moe](https://ddlc.moe) rather than eyeballing it. Nothing here is a taste call except which slot goes where
