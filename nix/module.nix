@@ -46,9 +46,7 @@ in
     (lib.mkIf cfg.kitty.enable {
       # Colours land after settings in kitty.conf, and kitty takes the last word for a key —
       # so this wins over anything the rest of the configuration sets
-      programs.kitty.extraConfig = lib.mkAfter (
-        builtins.readFile self.lib.kitty.${cfg.kitty.variant}
-      );
+      programs.kitty.extraConfig = lib.mkAfter (builtins.readFile self.lib.kitty.${cfg.kitty.variant});
     })
 
     (lib.mkIf cfg.btop.enable {
