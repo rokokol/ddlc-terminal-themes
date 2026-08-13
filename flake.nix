@@ -48,7 +48,10 @@
       # Both applications read a theme out of ~/.config, so the module is the two settings that
       # name it — which is the half a consumer keeps getting wrong. lib below stays for a
       # configuration that would rather place the files itself
-      homeManagerModules.default = import ./nix/module.nix { inherit self; };
+      # homeModules is the name the flake schema knows; homeManagerModules is what most
+      # consumers still write, so both point at the same module
+      homeModules.default = import ./nix/module.nix { inherit self; };
+      homeManagerModules.default = self.homeModules.default;
 
       lib = {
         kitty = {
@@ -82,6 +85,11 @@
 
       # dist/ is committed so a consumer without Nix just copies files; this proves it is what
       # the generator would write today against the palette this flake is locked to
+      # For a consumer who reaches for pkgs rather than this flake's packages directly
+      overlays.default = final: _prev: {
+        ddlc-terminal-themes = self.packages.${final.stdenv.hostPlatform.system}.default;
+      };
+
       checks = forAllSystems (pkgs: {
         dist-is-current = pkgs.runCommand "dist-is-current" { } ''
           install -m755 ${generator} generate.sh
