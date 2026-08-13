@@ -59,7 +59,7 @@ nix build github:rokokol/ddlc-terminal-themes && cat result/share/ddlc-terminal-
 
 One switch per application, because the two are wired up differently and the wiring is the half that goes wrong:
 
-| option | | default |
+| option | what it does | default |
 | --- | --- | --- |
 | `kitty.enable` | the colours into `kitty.conf`, after your own settings — kitty takes the last word for a key | `false` |
 | `kitty.variant` | `light` or `dark` | `dark` |
@@ -84,7 +84,7 @@ kitty follows [tinted-kitty](https://github.com/tinted-theming/tinted-kitty) slo
 
 btop has no base16 template anywhere upstream, so its mapping is this repository's own:
 
-| | |
+| group | how it is coloured |
 | --- | --- |
 | boxes | `cpu_box` blue, `mem_box` green, `net_box` magenta, `proc_box` cyan — four accents, so a glance lands in the right panel |
 | load | temperature, CPU and process gradients rise through the palette's warm accents: green, then yellow, then red |
