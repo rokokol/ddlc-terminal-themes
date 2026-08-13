@@ -30,7 +30,7 @@ nix build github:rokokol/ddlc-terminal-themes && cat result/share/ddlc-terminal-
   - [Any other distribution](#any-other-distribution)
 - [Where the slots go](#where-the-slots-go)
 - [Re-rendering](#re-rendering)
-- [Checks](#checks)
+- [Tests](#tests)
 - [Layout](#layout)
 - [License](#license)
 
@@ -104,7 +104,7 @@ nix develop -c ./generate.sh
 
 The schemes come from ddlc-palette and nothing else does — the palette is measured, this repository is only a mapping. A weekly workflow re-renders against the palette's HEAD rather than the lock and opens a pull request when they part ways, so a colour cannot move upstream and quietly leave this dark
 
-## Checks
+## Tests
 
 `nix flake check` proves that `dist/` is what `generate.sh` writes today, that every value in it is a hex colour and the ANSI table is whole, that the module wires both applications up (and touches neither while disabled), and that the two scripts pass shellcheck and shfmt
 
