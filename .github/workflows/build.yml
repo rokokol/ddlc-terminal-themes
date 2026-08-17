@@ -32,6 +32,16 @@ jobs:
           ./install.sh --config-home "$PWD/out"
           test -f out/kitty/ddlc-kitty-dark.conf
           test -f out/btop/themes/ddlc-dark.theme
+          ./install.sh --destdir "$PWD/stage" --config-home /usr/share/ddlc-terminal-themes --component kitty
+          test -f stage/usr/share/ddlc-terminal-themes/kitty/ddlc-kitty-dark.conf
+          test ! -e stage/usr/share/ddlc-terminal-themes/btop
+          ./install.sh --config-home "$PWD/legacy-kitty" --kitty
+          test -f legacy-kitty/kitty/ddlc-kitty-dark.conf
+          test ! -e legacy-kitty/btop
+          ./install.sh --config-home "$PWD/legacy-btop" --btop
+          test ! -e legacy-btop/kitty
+          test -f legacy-btop/btop/themes/ddlc-dark.theme
+          ! DESTDIR=$PWD/bad ./install.sh --config-home usr/share/themes >/dev/null 2>&1
       - run: nix fmt -- --ci
 
   shell:

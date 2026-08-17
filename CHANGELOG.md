@@ -4,6 +4,10 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 
 ## [Unreleased]
 
+### Changed
+
+- `install.sh` accepts a staging `DESTDIR` and a `kitty|btop|all` component while retaining the short `--kitty` and `--btop` forms
+
 ## [1.0.0] - 2026-08-13
 
 Split out of [rokokol/huix](https://github.com/rokokol/huix), where the kitty and btop generators were two hundred lines inside `ddlc-palette`'s `generate.sh`

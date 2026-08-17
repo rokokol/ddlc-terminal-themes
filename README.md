@@ -73,10 +73,12 @@ One switch per application, because the two are wired up differently and the wir
 ```sh
 git clone https://github.com/rokokol/ddlc-terminal-themes
 cd ddlc-terminal-themes
-./install.sh              # --kitty or --btop for one of them
+./install.sh              # --component kitty or --component btop for one of them
 ```
 
 Nothing is built: [`dist/`](dist) is committed, so this is a copy into `~/.config`. kitty gets both variants next to `kitty.conf`, where `include ddlc-kitty-dark.conf` resolves; btop lists a theme under its file name, so the app segment is dropped on the way in and `ddlc-btop-dark.theme` lands as `ddlc-dark.theme`
+
+Package recipes can stage another config root without duplicating the layout: `DESTDIR="$pkgdir" ./install.sh --config-home /usr/share/ddlc-terminal-themes`. Add `--component kitty` or `--component btop` for split packages
 
 ## Where the slots go
 
