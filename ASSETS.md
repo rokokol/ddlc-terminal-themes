@@ -1,0 +1,21 @@
+# Assets and third-party content
+
+`LICENSE` (MIT) covers the **code** in this repository — `generate.sh`, `install.sh` and the Nix expressions. It does **not** cover the colours, which are Team Salvato's; this repository only maps them onto two applications
+
+## Doki Doki Literature Club
+
+Doki Doki Literature Club and Doki Doki Literature Club Plus are the property of [Team Salvato](https://teamsalvato.com/). This project is **unaffiliated with and not endorsed by Team Salvato**
+
+The following are derived from official DDLC material:
+
+| Path | What |
+| --- | --- |
+| `dist/ddlc-kitty-*.conf`, `dist/ddlc-btop-*.theme` | the colours come from [ddlc-palette](https://github.com/rokokol/ddlc-palette), which measures them off [ddlc.moe](https://ddlc.moe/). Which base16 slot fills which kitty or btop key is mine, the values are theirs |
+
+No official artwork is bundled. `docs/*.png` are screenshots of my own terminal
+
+The `Doki` font family is Team Salvato's and is **not** shipped here; neither theme sets a font
+
+Use here follows [Team Salvato's IP guidelines](https://teamsalvato.com/ip-guidelines): this is non-commercial fan content, nothing containing official assets is sold, and no claim of affiliation is made. If you reuse any of it, the same conditions apply to you
+
+Team Salvato reserves the right to act on copyright or trademark infringement; nothing here grants a licence to their intellectual property
