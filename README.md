@@ -32,7 +32,6 @@ nix build github:rokokol/ddlc-terminal-themes && cat result/share/ddlc-terminal-
 - [Re-rendering](#re-rendering)
 - [Tests](#tests)
 - [Layout](#layout)
-- [License](#license)
 
 ## What it looks like
 
@@ -118,7 +117,3 @@ nix/          module.nix, module-test.nix
 dist/         the rendered themes, committed for consumers without Nix
 install.sh    for systems without Nix
 ```
-
-## License
-
-MIT. The colours are Team Salvato's
