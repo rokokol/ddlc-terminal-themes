@@ -46,15 +46,18 @@ nix build github:rokokol/ddlc-themes && cat result/share/ddlc-themes/ddlc-kitty-
 ![kitty running fastfetch and a directory listing](docs/screenshot-kitty.png)
 
 ![btop, all four panels](docs/screenshot-btop.png)
+
 > The wallpaper comes through because kitty runs at `background_opacity 0.9` — neither theme sets an opacity of its own, and btop simply inherits the terminal's
 
+![opencode](docs/opencode.png)
+
 | ![the matplotlib demo figure, light variant](docs/matplotlib-light.png) | ![the matplotlib demo figure, dark variant](docs/matplotlib-dark.png) |
-| --- | --- |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------- |
 
 > [`docs/matplotlib-demo.py`](docs/matplotlib-demo.py) renders both: the cycler on lines and bars — five series on paper, three on ink, which is the theme's own statement — and the two colormap families on the heatmaps
 
 | ![the report stylesheet, light variant](docs/report-light.png) | ![the report stylesheet, dark variant](docs/report-dark.png) |
-| --- | --- |
+| -------------------------------------------------------------- | ------------------------------------------------------------ |
 
 > [`docs/report-demo.html`](docs/report-demo.html) is the page behind these — open it from the checkout and pin a variant with `?theme=dark`
 
@@ -77,15 +80,15 @@ nix build github:rokokol/ddlc-themes && cat result/share/ddlc-themes/ddlc-kitty-
 
 One switch per application, because each is wired up differently and the wiring is the half that goes wrong:
 
-| option | what it does | default |
-| --- | --- | --- |
-| `kitty.enable` | the colours into `kitty.conf`, after your own settings — kitty takes the last word for a key | `false` |
-| `kitty.variant` | `light` or `dark` | `dark` |
-| `btop.enable` | both themes into `~/.config/btop/themes/` and one of them named in `btop.conf` | `false` |
-| `btop.variant` | which one is named. The other is deployed anyway — btop lists that directory, so it is a keypress away in its own menu | `dark` |
-| `matplotlib.enable` | both styles into `~/.config/matplotlib/stylelib/` and the colormaps module next to them | `false` |
-| `claude-code.enable` | both themes into `~/.claude/themes/`, where `/theme` lists them as `ddlc-dark` and `ddlc-light` | `false` |
-| `opencode.enable` | the one file into `~/.config/opencode/themes/` — it carries both variants itself | `false` |
+| option               | what it does                                                                                                           | default |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------- |
+| `kitty.enable`       | the colours into `kitty.conf`, after your own settings — kitty takes the last word for a key                           | `false` |
+| `kitty.variant`      | `light` or `dark`                                                                                                      | `dark`  |
+| `btop.enable`        | both themes into `~/.config/btop/themes/` and one of them named in `btop.conf`                                         | `false` |
+| `btop.variant`       | which one is named. The other is deployed anyway — btop lists that directory, so it is a keypress away in its own menu | `dark`  |
+| `matplotlib.enable`  | both styles into `~/.config/matplotlib/stylelib/` and the colormaps module next to them                                | `false` |
+| `claude-code.enable` | both themes into `~/.claude/themes/`, where `/theme` lists them as `ddlc-dark` and `ddlc-light`                        | `false` |
+| `opencode.enable`    | the one file into `~/.config/opencode/themes/` — it carries both variants itself                                       | `false` |
 
 The last three have no `variant`: each application picks its own — matplotlib names a style per chart, Claude Code lists its themes directory in `/theme`, opencode reads the variant out of the file by the terminal's background. None of them touches the application's own config, so the selection stays yours; and a declaratively deployed theme is a read-only store link, so if you would rather keep the files editable in place, skip the switch and use `install.sh` below — it copies plain files
 
@@ -129,10 +132,10 @@ kitty follows [tinted-kitty](https://github.com/tinted-theming/tinted-kitty) slo
 
 btop has no base16 template anywhere upstream, so its mapping is this repository's own:
 
-| group | how it is coloured |
-| --- | --- |
-| boxes | `cpu_box` blue, `mem_box` green, `net_box` magenta, `proc_box` cyan — four accents, so a glance lands in the right panel |
-| load | temperature, CPU and process gradients rise through the palette's warm accents: green, then yellow, then red |
+| group  | how it is coloured                                                                                                                                        |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| boxes  | `cpu_box` blue, `mem_box` green, `net_box` magenta, `proc_box` cyan — four accents, so a glance lands in the right panel                                  |
+| load   | temperature, CPU and process gradients rise through the palette's warm accents: green, then yellow, then red                                              |
 | meters | free, cached, available, used, download and upload carry no scale, so each is one colour with an empty mid and end, which is how btop spells a flat meter |
 
 The report stylesheet is the matplotlib theme spoken in CSS: the same grounds and inks, rules between table rows only — the grid stays under the data — and the same series as custom properties, five on paper, three on ink (in dark, `--ddlc-series-4` and `-5` collapse into the muted grey — a tail that was not folded into the remaining three stays visible but stops pretending to be a series). Links are plum with a pink hover and dividers are blush, because that is what the site itself does
