@@ -1,5 +1,5 @@
 {
-  description = "The Doki Doki Literature Club themes for kitty and btop, light and dark";
+  description = "The Doki Doki Literature Club themes for kitty, btop, matplotlib, Claude Code and opencode, light and dark";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -39,6 +39,9 @@
       };
 
       schemes = ddlc-palette.lib.dist.base16;
+      # The base16 schemes carry sixteen slots; the themes with more roles than that name
+      # palette colours directly, out of the flat name=HEX form
+      palette = ddlc-palette.lib.dist.env;
     in
     {
       # The rendered themes as paths, so a consumer names an app and a variant instead of a
@@ -62,6 +65,21 @@
           light = ./dist/ddlc-btop-light.theme;
           dark = ./dist/ddlc-btop-dark.theme;
         };
+        # The filenames are the API — plt.style.use("ddlc"), import ddlc_cmaps — so keep them
+        # when placing these
+        matplotlib = {
+          light = ./dist/ddlc.mplstyle;
+          dark = ./dist/ddlc-dark.mplstyle;
+          cmaps = ./dist/ddlc_cmaps.py;
+        };
+        # The matplotlib roles as a stylesheet for HTML reports; one file, light and dark
+        report = ./dist/ddlc-report.css;
+        claude-code = {
+          light = ./dist/ddlc-claude-code-light.json;
+          dark = ./dist/ddlc-claude-code-dark.json;
+        };
+        # One file, both variants: opencode reads {dark, light} out of each value itself
+        opencode = ./dist/ddlc-opencode.json;
       };
 
       packages = forAllSystems (pkgs: {
@@ -69,7 +87,7 @@
           pkgs.runCommand "ddlc-terminal-themes"
             {
               meta = {
-                description = "The Doki Doki Literature Club themes for kitty and btop";
+                description = "The Doki Doki Literature Club themes for kitty, btop, matplotlib, Claude Code and opencode";
                 homepage = "https://github.com/rokokol/ddlc-terminal-themes";
                 # MIT covers the generator; the colours themselves are Team Salvato's
                 license = pkgs.lib.licenses.mit;
@@ -91,9 +109,10 @@
       };
 
       checks = forAllSystems (pkgs: {
-        dist-is-current = pkgs.runCommand "dist-is-current" { } ''
+        dist-is-current = pkgs.runCommand "dist-is-current" { nativeBuildInputs = [ pkgs.jq ]; } ''
           install -m755 ${generator} generate.sh
           DDLC_BASE16_LIGHT=${schemes.light} DDLC_BASE16_DARK=${schemes.dark} \
+            DDLC_PALETTE_ENV=${palette} \
             bash generate.sh >/dev/null
           diff -r ${dist} dist
           touch $out
@@ -123,15 +142,26 @@
               # the consumer wrote next to the module
               want '.kittyOrder | test("#123456[\\s\\S]*#222222")' "the colours do not land last"
 
-              want '.btopFiles | index("btop/themes/ddlc-dark.theme")' "the dark theme is not deployed"
+              want '.configFiles | index("btop/themes/ddlc-dark.theme")' "the dark theme is not deployed"
               # Both go in whatever the variant is: btop lists its themes directory, so the other
               # one is a keypress away in its own menu
-              want '.btopFiles | index("btop/themes/ddlc-light.theme")' "the light theme is not deployed"
+              want '.configFiles | index("btop/themes/ddlc-light.theme")' "the light theme is not deployed"
               want '.btopTheme == "ddlc-dark"' "btop does not name the theme"
               want '.btopThemeLight == "ddlc-light"' "the variant does not reach btop"
 
+              want '.configFiles | index("matplotlib/stylelib/ddlc.mplstyle")' "the light style is not deployed"
+              want '.configFiles | index("matplotlib/stylelib/ddlc-dark.mplstyle")' "the dark style is not deployed"
+              want '.configFiles | index("matplotlib/ddlc_cmaps.py")' "the colormaps are not deployed"
+
+              # The slug /theme lists is the filename, so the app segment is dropped on the way in
+              want '.homeFiles | index(".claude/themes/ddlc-dark.json")' "the dark Claude Code theme is not deployed"
+              want '.homeFiles | index(".claude/themes/ddlc-light.json")' "the light Claude Code theme is not deployed"
+              # One file for opencode, landing under the name the theme is selected by
+              want '.configFiles | index("opencode/themes/ddlc.json")' "the opencode theme is not deployed"
+
               want '.offKitty == ""' "kitty is themed while disabled"
               want '.offFiles == []' "a theme is deployed while disabled"
+              want '.offHomeFiles == []' "a Claude Code theme is deployed while disabled"
               want '.offTheme == null' "btop is themed while disabled"
               touch $out
             '';
@@ -154,7 +184,7 @@
 
         # A theme is only usable if every colour reached it, and a missing slot renders as an
         # empty value rather than as an error
-        themes-are-filled = pkgs.runCommand "themes-are-filled" { } ''
+        themes-are-filled = pkgs.runCommand "themes-are-filled" { nativeBuildInputs = [ pkgs.jq ]; } ''
           for f in ${dist}/ddlc-kitty-*.conf; do
             grep -Eq '^color21 #[0-9A-F]{6}$' "$f" || { echo "$f: the ANSI table is short"; exit 1; }
             if grep -Ev '^(#|$)' "$f" | grep -Ev ' #[0-9A-F]{6}$'; then
@@ -170,6 +200,34 @@
               exit 1
             fi
           done
+          # matplotlib takes its hex bare, so every colour-carrying rcparam must end in six hex
+          # digits — except the cycler, which is a list of them
+          for f in ${dist}/ddlc.mplstyle ${dist}/ddlc-dark.mplstyle; do
+            grep -Eq "^axes.prop_cycle:  cycler\('color', \['[0-9A-F]{6}'" "$f" \
+              || { echo "$f: no cycler"; exit 1; }
+            if grep -E 'colou?r:' "$f" | grep -Ev '(color:( +[0-9A-F]{6}| +cycler.*)|labelcolor: +[0-9A-F]{6})$'; then
+              echo "$f: the value above is not a bare hex colour" >&2
+              exit 1
+            fi
+          done
+          # Every token the stylesheet defines is a hex; the element rules only reference them
+          if grep -E '^ *--ddlc-' ${dist}/ddlc-report.css | grep -Ev '^ *--ddlc-[a-z0-9-]+: #[0-9A-F]{6};$'; then
+            echo "ddlc-report.css: the token above is not a hex colour" >&2
+            exit 1
+          fi
+          for f in ${dist}/ddlc-claude-code-*.json; do
+            jq -e '(.overrides | length) > 0
+              and ([.overrides[] | select(test("^#[0-9A-F]{6}$") | not)] == [])' "$f" >/dev/null \
+              || { echo "$f: an override is not a hex colour"; exit 1; }
+          done
+          # Every def is a hex and every theme value resolves: a def by name, or "none"
+          jq -e '. as $r
+            | (.defs | length > 0)
+            and ([.defs[] | select(test("^#[0-9A-F]{6}$") | not)] == [])
+            and ([.theme[] | if type == "object" then .dark, .light else . end
+                  | . as $v | select(($v == "none" or ($r.defs | has($v))) | not)] == [])' \
+            ${dist}/ddlc-opencode.json >/dev/null \
+            || { echo "ddlc-opencode.json: a value does not resolve against defs"; exit 1; }
           touch $out
         '';
       });
@@ -179,10 +237,12 @@
           packages = [
             pkgs.shellcheck
             pkgs.shfmt
+            pkgs.jq
           ];
           # So generate.sh runs with no arguments inside the shell
           DDLC_BASE16_LIGHT = schemes.light;
           DDLC_BASE16_DARK = schemes.dark;
+          DDLC_PALETTE_ENV = palette;
         };
       });
 

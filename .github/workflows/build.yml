@@ -29,9 +29,13 @@ jobs:
       # and btop only finds a theme under the name it lands with
       - name: install.sh works
         run: |
-          ./install.sh --config-home "$PWD/out"
+          ./install.sh --config-home "$PWD/out" --claude-home "$PWD/out-claude"
           test -f out/kitty/ddlc-kitty-dark.conf
           test -f out/btop/themes/ddlc-dark.theme
+          test -f out/matplotlib/stylelib/ddlc.mplstyle
+          test -f out/matplotlib/ddlc_cmaps.py
+          test -f out/opencode/themes/ddlc.json
+          test -f out-claude/themes/ddlc-dark.json
           ./install.sh --destdir "$PWD/stage" --config-home /usr/share/ddlc-terminal-themes --component kitty
           test -f stage/usr/share/ddlc-terminal-themes/kitty/ddlc-kitty-dark.conf
           test ! -e stage/usr/share/ddlc-terminal-themes/btop
@@ -41,7 +45,11 @@ jobs:
           ./install.sh --config-home "$PWD/legacy-btop" --btop
           test ! -e legacy-btop/kitty
           test -f legacy-btop/btop/themes/ddlc-dark.theme
+          ./install.sh --config-home "$PWD/one" --claude-home "$PWD/one-claude" --component claude-code
+          test ! -e one/kitty
+          test -f one-claude/themes/ddlc-light.json
           ! DESTDIR=$PWD/bad ./install.sh --config-home usr/share/themes >/dev/null 2>&1
+          ! DESTDIR=$PWD/bad ./install.sh --claude-home .claude >/dev/null 2>&1
       - run: nix fmt -- --ci
 
   shell:

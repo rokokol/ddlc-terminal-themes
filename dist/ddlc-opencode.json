@@ -1,0 +1,198 @@
+{
+  "$schema": "https://opencode.ai/theme.json",
+  "defs": {
+    "paper": "#FFFFFF",
+    "dot": "#FFDBF0",
+    "blush": "#FFBDE1",
+    "pink": "#DD77BB",
+    "plum": "#BB5599",
+    "ink": "#222222",
+    "ash": "#DADADA",
+    "sayori": "#F1A796",
+    "monika": "#D1897E",
+    "natsuki": "#FFBBC3",
+    "yuri": "#6C4681",
+    "monikaEye": "#76C332",
+    "sayoriEye": "#72D0FA",
+    "yuriShadow": "#361B39",
+    "jacket": "#B59CA1",
+    "skirt": "#4B669E",
+    "ribbon": "#3F6B3F",
+    "rule": "#6868B4",
+    "bow": "#CC0C29",
+    "bowShadow": "#8C1132"
+  },
+  "theme": {
+    "primary": {
+      "dark": "pink",
+      "light": "plum"
+    },
+    "secondary": {
+      "dark": "sayoriEye",
+      "light": "skirt"
+    },
+    "accent": {
+      "dark": "sayori",
+      "light": "plum"
+    },
+    "error": "bow",
+    "warning": {
+      "dark": "monika",
+      "light": "bowShadow"
+    },
+    "success": {
+      "dark": "monikaEye",
+      "light": "ribbon"
+    },
+    "info": {
+      "dark": "sayoriEye",
+      "light": "skirt"
+    },
+    "text": {
+      "dark": "dot",
+      "light": "yuriShadow"
+    },
+    "textMuted": {
+      "dark": "natsuki",
+      "light": "jacket"
+    },
+    "selectedListItemText": "paper",
+    "background": {
+      "dark": "ink",
+      "light": "paper"
+    },
+    "backgroundPanel": {
+      "dark": "yuriShadow",
+      "light": "dot"
+    },
+    "backgroundElement": {
+      "dark": "yuri",
+      "light": "natsuki"
+    },
+    "border": "jacket",
+    "borderActive": {
+      "dark": "pink",
+      "light": "plum"
+    },
+    "borderSubtle": {
+      "dark": "yuri",
+      "light": "ash"
+    },
+    "diffAdded": {
+      "dark": "paper",
+      "light": "ribbon"
+    },
+    "diffRemoved": {
+      "dark": "paper",
+      "light": "bowShadow"
+    },
+    "diffContext": "jacket",
+    "diffHunkHeader": "jacket",
+    "diffHighlightAdded": {
+      "dark": "monikaEye",
+      "light": "ribbon"
+    },
+    "diffHighlightRemoved": {
+      "dark": "bow",
+      "light": "bowShadow"
+    },
+    "diffAddedBg": {
+      "dark": "ribbon",
+      "light": "none"
+    },
+    "diffRemovedBg": {
+      "dark": "bowShadow",
+      "light": "none"
+    },
+    "diffContextBg": "none",
+    "diffLineNumber": "jacket",
+    "diffAddedLineNumberBg": {
+      "dark": "ribbon",
+      "light": "none"
+    },
+    "diffRemovedLineNumberBg": {
+      "dark": "bowShadow",
+      "light": "none"
+    },
+    "markdownText": {
+      "dark": "dot",
+      "light": "yuriShadow"
+    },
+    "markdownHeading": {
+      "dark": "pink",
+      "light": "plum"
+    },
+    "markdownLink": "rule",
+    "markdownLinkText": {
+      "dark": "sayoriEye",
+      "light": "skirt"
+    },
+    "markdownCode": {
+      "dark": "natsuki",
+      "light": "plum"
+    },
+    "markdownBlockQuote": "jacket",
+    "markdownEmph": {
+      "dark": "monika",
+      "light": "yuri"
+    },
+    "markdownStrong": {
+      "dark": "sayori",
+      "light": "plum"
+    },
+    "markdownHorizontalRule": {
+      "dark": "yuriShadow",
+      "light": "ash"
+    },
+    "markdownListItem": {
+      "dark": "dot",
+      "light": "yuriShadow"
+    },
+    "markdownListEnumeration": {
+      "dark": "pink",
+      "light": "plum"
+    },
+    "markdownImage": "rule",
+    "markdownImageText": {
+      "dark": "sayoriEye",
+      "light": "skirt"
+    },
+    "markdownCodeBlock": {
+      "dark": "dot",
+      "light": "yuriShadow"
+    },
+    "syntaxComment": "jacket",
+    "syntaxKeyword": {
+      "dark": "pink",
+      "light": "plum"
+    },
+    "syntaxFunction": {
+      "dark": "sayoriEye",
+      "light": "skirt"
+    },
+    "syntaxVariable": {
+      "dark": "dot",
+      "light": "yuriShadow"
+    },
+    "syntaxString": {
+      "dark": "monikaEye",
+      "light": "ribbon"
+    },
+    "syntaxNumber": {
+      "dark": "sayori",
+      "light": "yuri"
+    },
+    "syntaxType": {
+      "dark": "monika",
+      "light": "rule"
+    },
+    "syntaxOperator": {
+      "dark": "natsuki",
+      "light": "bowShadow"
+    },
+    "syntaxPunctuation": {
+      "dark": "dot",
+      "light": "yuriShadow"
+    }
+  }
+}

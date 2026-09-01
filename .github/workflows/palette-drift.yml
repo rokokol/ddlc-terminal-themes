@@ -34,8 +34,10 @@ jobs:
           fi
           git diff --stat -- dist
 
-          # Which slot moved where, so the notification alone says whether this needs a look
-          summary=$(git diff -U0 -- dist | grep -E '^[-+](background|theme\[main_bg\]|color)' | head -20)
+          # Which slot moved where, so the notification alone says whether this needs a look.
+          # One representative pattern per format: kitty keys, btop's background, matplotlib's
+          # grounds and cycler, and the JSON themes' defs/overrides lines
+          summary=$(git diff -U0 -- dist | grep -E '^[-+](background|theme\[main_bg\]|color|figure\.facecolor|axes\.prop_cycle| *"[a-zA-Z_]+": "#)' | head -20)
           branch=palette/$(date -u +%Y-%m-%d)
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

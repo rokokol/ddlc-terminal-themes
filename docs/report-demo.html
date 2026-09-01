@@ -1,0 +1,31 @@
+<!doctype html>
+<!-- The sample page behind docs/report-{light,dark}.png. Open it from the checkout — it links
+     the stylesheet relatively — and pin a variant with ?theme=dark; without the parameter the
+     stylesheet decides by prefers-color-scheme, as it would in a real report -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ddlc-report.css demo</title>
+<link rel="stylesheet" href="../dist/ddlc-report.css">
+<script>
+  const theme = new URLSearchParams(location.search).get("theme");
+  if (theme) document.documentElement.dataset.theme = theme;
+</script>
+</head>
+<body>
+<h1>Literature club — weekly report</h1>
+<p class="ddlc-muted">monday · club activities</p>
+<p>Body text with <a href="#">a link to the poems</a>, a bit of <code>inline code</code> and the matplotlib series: <b class="ddlc-series-1">plum</b>, <b class="ddlc-series-2">bow</b>, <b class="ddlc-series-3">rule</b>, <b class="ddlc-series-4">monikaEye</b> and <b class="ddlc-series-5">yuri</b>.</p>
+<h2>Poems this week</h2>
+<table>
+<tr><th>member</th><th>poems</th><th>tea parties</th></tr>
+<tr><td>Sayori</td><td>12</td><td>4</td></tr>
+<tr><td>Natsuki</td><td>9</td><td>7</td></tr>
+<tr><td>Yuri</td><td>15</td><td>2</td></tr>
+</table>
+<blockquote>Quote of the week — on the depth and strangeness of the sea.</blockquote>
+<pre><code>plt.style.use("ddlc")  # a code block on its own ground</code></pre>
+<hr>
+<p class="ddlc-muted">report footer, after the divider</p>
+</body>
+</html>

@@ -44,6 +44,21 @@ in
         '';
       };
     };
+
+    # The three below have no variant switch: each application picks its own. matplotlib names
+    # a style per chart, Claude Code lists ~/.claude/themes in /theme, and opencode reads the
+    # variant out of the one file by the terminal's own background
+    matplotlib = {
+      enable = lib.mkEnableOption "the DDLC matplotlib styles and colormaps";
+    };
+
+    claude-code = {
+      enable = lib.mkEnableOption "the DDLC Claude Code themes";
+    };
+
+    opencode = {
+      enable = lib.mkEnableOption "the DDLC opencode theme";
+    };
   };
 
   config = lib.mkMerge [
@@ -61,6 +76,31 @@ in
       };
 
       programs.btop.settings.color_theme = lib.mkDefault "ddlc-${cfg.btop.variant}";
+    })
+
+    (lib.mkIf cfg.matplotlib.enable {
+      # The filenames are the API — plt.style.use("ddlc"), import ddlc_cmaps — so they keep
+      # their source names
+      xdg.configFile = {
+        "matplotlib/stylelib/ddlc.mplstyle".source = self.lib.matplotlib.light;
+        "matplotlib/stylelib/ddlc-dark.mplstyle".source = self.lib.matplotlib.dark;
+        "matplotlib/ddlc_cmaps.py".source = self.lib.matplotlib.cmaps;
+      };
+    })
+
+    (lib.mkIf cfg.claude-code.enable {
+      # ~/.claude sits outside XDG, and the filename is the slug /theme lists, so the app
+      # segment is dropped on the way in
+      home.file = {
+        ".claude/themes/ddlc-light.json".source = self.lib.claude-code.light;
+        ".claude/themes/ddlc-dark.json".source = self.lib.claude-code.dark;
+      };
+    })
+
+    (lib.mkIf cfg.opencode.enable {
+      # The filename is the theme name, so ddlc-opencode.json lands as ddlc.json; select it
+      # with "theme": "ddlc" in opencode's config or /theme in its TUI
+      xdg.configFile."opencode/themes/ddlc.json".source = self.lib.opencode;
     })
   ];
 }
