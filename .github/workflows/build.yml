@@ -5,14 +5,17 @@ on:
     branches: [master]
   pull_request:
   workflow_dispatch:
-  # Called by update-lock.yml against its temp branch, so the lock bump is checked by this
-  # file rather than by a copy of its commands
+  # update-lock.yml runs this workflow, not a copy of its commands, against the bump
+  # branch — without workflow_call + ref that verify step silently checks out master
   workflow_call:
     inputs:
       ref:
         type: string
         required: false
         default: ""
+
+permissions:
+  contents: read
 
 jobs:
   nix:
@@ -22,11 +25,21 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
       - uses: cachix/install-nix-action@v31
+
+      - name: VERSION matches CHANGELOG
+        run: |
+          ver=$(cat VERSION)
+          grep -qF "## [$ver]" CHANGELOG.md || {
+            echo "VERSION says $ver but CHANGELOG.md has no ## [$ver] heading" >&2
+            exit 1
+          }
+
       - run: nix build --no-write-lock-file
-      # dist-is-current, themes-are-filled, shell-is-clean
+      # dist-is-current, themes-are-filled, module-wiring, scripts-lint, install-sh-works
       - run: nix flake check --no-write-lock-file
-      # The themes must stay usable without Nix: install.sh copies dist/ into a config tree,
-      # and btop only finds a theme under the name it lands with
+
+      # The full installer contract lives in tests/run.sh (run by flake check); this is
+      # the smoke that the same script behaves on a real filesystem outside the sandbox
       - name: install.sh works
         run: |
           ./install.sh --config-home "$PWD/out" --claude-home "$PWD/out-claude"
@@ -36,22 +49,36 @@ jobs:
           test -f out/matplotlib/ddlc_cmaps.py
           test -f out/opencode/themes/ddlc.json
           test -f out-claude/themes/ddlc-dark.json
-          ./install.sh --destdir "$PWD/stage" --config-home /usr/share/ddlc-terminal-themes --component kitty
-          test -f stage/usr/share/ddlc-terminal-themes/kitty/ddlc-kitty-dark.conf
-          test ! -e stage/usr/share/ddlc-terminal-themes/btop
+          test -f out/ddlc-themes/install-manifest
+          ./install.sh --config-home "$PWD/out" --claude-home "$PWD/out-claude" --uninstall --component btop
+          test ! -e out/btop
+          test -f out/kitty/ddlc-kitty-dark.conf
+          ./install.sh --config-home "$PWD/out" --claude-home "$PWD/out-claude" --uninstall
+          test ! -e out/ddlc-themes
+          test ! -e out/kitty
+          test ! -e out-claude/themes
+          ./install.sh --destdir "$PWD/stage" --config-home /usr/share/ddlc-themes --component kitty
+          test -f stage/usr/share/ddlc-themes/kitty/ddlc-kitty-dark.conf
+          test ! -e stage/usr/share/ddlc-themes/btop
+          if grep -v '^#' stage/usr/share/ddlc-themes/ddlc-themes/install-manifest | grep -qF "$PWD/stage"; then
+            echo "the staged manifest leaks DESTDIR into a recorded path" >&2
+            exit 1
+          fi
           ./install.sh --config-home "$PWD/legacy-kitty" --kitty
           test -f legacy-kitty/kitty/ddlc-kitty-dark.conf
           test ! -e legacy-kitty/btop
-          ./install.sh --config-home "$PWD/legacy-btop" --btop
-          test ! -e legacy-btop/kitty
-          test -f legacy-btop/btop/themes/ddlc-dark.theme
           ./install.sh --config-home "$PWD/one" --claude-home "$PWD/one-claude" --component claude-code
           test ! -e one/kitty
           test -f one-claude/themes/ddlc-light.json
-          ! DESTDIR=$PWD/bad ./install.sh --config-home usr/share/themes >/dev/null 2>&1
-          ! DESTDIR=$PWD/bad ./install.sh --claude-home .claude >/dev/null 2>&1
+          if ./install.sh --config-home usr/share/themes >/dev/null 2>&1; then
+            echo "a relative config home was accepted" >&2
+            exit 1
+          fi
+
       - run: nix fmt -- --ci
 
+  # The one file list lives in the flake's scripts-lint check — this job is a fast,
+  # separately-named status for it, not a second copy of the commands
   shell:
     runs-on: ubuntu-latest
     steps:
@@ -59,5 +86,13 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
       - uses: cachix/install-nix-action@v31
-      - run: nix develop --no-write-lock-file --command shellcheck generate.sh install.sh
-      - run: nix develop --no-write-lock-file --command shfmt -d -i 2 -ci generate.sh install.sh
+      # nix run/shell nixpkgs#tool is a mirror-fate lookup — whatever nixpkgs the runner
+      # resolves today decides the job. Tools a workflow needs live in the flake's dev
+      # shell, pinned by the lock, reached with nix develop
+      - name: CI tools come from the lock, not the registry
+        run: |
+          if grep -rEn 'nix (run|shell) nixpkgs#' .github/workflows; then
+            echo "unpinned registry lookup in a workflow — pin the tool in the flake's dev shell and use nix develop" >&2
+            exit 1
+          fi
+      - run: nix build --no-write-lock-file .#checks.x86_64-linux.scripts-lint

@@ -34,9 +34,24 @@
         path = ./install.sh;
       };
       dist = builtins.path {
-        name = "ddlc-terminal-themes-dist";
+        name = "ddlc-themes-dist";
         path = ./dist;
       };
+      versionFile = builtins.path {
+        name = "VERSION";
+        path = ./VERSION;
+      };
+      testsDir = builtins.path {
+        name = "ddlc-themes-tests";
+        path = ./tests;
+      };
+      completionsDir = builtins.path {
+        name = "ddlc-themes-completions";
+        path = ./completions;
+      };
+      # The one source of version: VERSION at the repo root, read by the package, printed
+      # by install.sh -v, asserted against CHANGELOG.md by CI
+      version = nixpkgs.lib.fileContents versionFile;
 
       schemes = ddlc-palette.lib.dist.base16;
       # The base16 schemes carry sixteen slots; the themes with more roles than that name
@@ -84,11 +99,11 @@
 
       packages = forAllSystems (pkgs: {
         default =
-          pkgs.runCommand "ddlc-terminal-themes"
+          pkgs.runCommand "ddlc-themes-${version}"
             {
               meta = {
                 description = "The Doki Doki Literature Club themes for kitty, btop, matplotlib, Claude Code and opencode";
-                homepage = "https://github.com/rokokol/ddlc-terminal-themes";
+                homepage = "https://github.com/rokokol/ddlc-themes";
                 # MIT covers the generator; the colours themselves are Team Salvato's
                 license = pkgs.lib.licenses.mit;
                 # Plain config files — nothing here is built for a platform
@@ -96,8 +111,8 @@
               };
             }
             ''
-              mkdir -p $out/share/ddlc-terminal-themes
-              cp -r ${dist}/. $out/share/ddlc-terminal-themes/
+              mkdir -p $out/share/ddlc-themes
+              cp -r ${dist}/. $out/share/ddlc-themes/
             '';
       });
 
@@ -105,7 +120,7 @@
       # the generator would write today against the palette this flake is locked to
       # For a consumer who reaches for pkgs rather than this flake's packages directly
       overlays.default = final: _prev: {
-        ddlc-terminal-themes = self.packages.${final.stdenv.hostPlatform.system}.default;
+        ddlc-themes = self.packages.${final.stdenv.hostPlatform.system}.default;
       };
 
       checks = forAllSystems (pkgs: {
@@ -166,19 +181,53 @@
               touch $out
             '';
 
-        # The generator is the repository as much as dist/ is, so its lint is a check like any
-        # other — CI then runs nothing that a local nix flake check does not
-        shell-is-clean =
-          pkgs.runCommand "shell-is-clean"
+        # The one shell file list lives here and nowhere else: CI's shell job is a fast
+        # named status for this check, not a second copy of the commands
+        scripts-lint =
+          pkgs.runCommand "scripts-lint"
             {
               nativeBuildInputs = [
                 pkgs.shellcheck
                 pkgs.shfmt
+                pkgs.zsh
               ];
             }
             ''
-              shellcheck ${generator} ${installer}
-              shfmt -i 2 -ci -d ${generator} ${installer}
+              files="${generator} ${installer} ${testsDir}/run.sh ${testsDir}/distro.sh ${testsDir}/check-completions.sh ${completionsDir}/install.sh.bash"
+              # shellcheck disable=SC2086
+              shellcheck $files
+              # shellcheck disable=SC2086
+              shfmt -d -i 2 -ci $files
+              # zsh is not shellcheck's language; a parse is what can be checked
+              zsh -n ${completionsDir}/install.sh.zsh
+
+              # install.sh and its completions must not drift apart
+              mkdir -p repo/tests
+              cp ${installer} repo/install.sh
+              cp -r ${completionsDir} repo/completions
+              cp ${testsDir}/check-completions.sh repo/tests/
+              bash repo/tests/check-completions.sh
+              touch $out
+            '';
+
+        # The fast installer suite, in the sandbox: the manifest contract, the
+        # per-component sweep, selective uninstall, staging, the refusal path
+        install-sh-works =
+          pkgs.runCommand "install-sh-works"
+            {
+              # tests/run.sh builds a deliberately install(1)-less PATH out of these
+              nativeBuildInputs = [ pkgs.coreutils ];
+            }
+            ''
+              mkdir -p repo/tests
+              cp ${installer} repo/install.sh
+              cp ${versionFile} repo/VERSION
+              cp -r ${dist} repo/dist
+              cp -r ${completionsDir} repo/completions
+              cp ${testsDir}/run.sh ${testsDir}/check-completions.sh repo/tests/
+              chmod +x repo/install.sh repo/tests/*.sh
+              patchShebangs repo >/dev/null
+              HOME=$PWD bash repo/tests/run.sh "$PWD/repo"
               touch $out
             '';
 

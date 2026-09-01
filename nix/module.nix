@@ -19,7 +19,7 @@ in
 {
   # A module is deduplicated by its key, and a function module's key is where it was imported
   # from — so two files importing this one would each declare every option below
-  key = "ddlc-terminal-themes";
+  key = "ddlc-themes";
 
   options.ddlc = {
     kitty = {

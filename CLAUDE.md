@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+Renamed from `ddlc-terminal-themes` to `ddlc-themes` (2026-09-01): the GitHub redirect covers old URLs, but the overlay attribute, the package share path and the recommended input name are all `ddlc-themes` now
+
 ## What this repo is
 
 The DDLC colours as themes for kitty, btop, matplotlib, Claude Code and opencode plus a report stylesheet, light and dark, rendered by `generate.sh` out of `ddlc-palette` — kitty and btop from the base16 schemes, the rest from the flat `palette.env` because they have more roles than sixteen slots. Nothing here is a taste call except which slot goes where. `dist/` holds the rendered files, committed for consumers without Nix
@@ -10,12 +12,13 @@ Seams in `rokokol/huix`, and no module on any: `programs/term/kitty.nix` does `r
 
 ```sh
 nix build                # the rendered themes
-nix flake check          # dist/ current, every slot filled, module wiring, shell lint
-./install.sh --config-home "$PWD/out"
+nix flake check          # dist/ current, every slot filled, module wiring, scripts-lint, tests/run.sh
+./tests/run.sh           # the installer suite alone, outside the sandbox
+./tests/distro.sh fedora # the full cycle in a real container (docker/podman; deliberate, images are large)
 nix fmt -- --ci
 ```
 
-There is no `tests/`: the repo renders data, and `dist-is-current` is the suite
+`VERSION` is the one source of version: the package reads it, `install.sh -v` prints it, CI asserts `CHANGELOG.md` has a matching heading. `install.sh` is standard huix-standard grammar adapted to a config tree: no `--prefix` (themes live in `~/.config` and `~/.claude`), components are **additive** with a per-component sweep, and `--uninstall --component C` takes one out selectively — the manifest lines carry the owning component first. New flags update both `completions/` files in the same commit, or `check-completions.sh` fails the flake check
 
 ## Layout
 
@@ -23,7 +26,9 @@ There is no `tests/`: the repo renders data, and `dist-is-current` is the suite
 generate.sh   the mapping: base16 slots and palette colours in, the themes out
 nix/          module.nix, module-test.nix
 dist/         the rendered themes, committed for consumers without Nix
-install.sh    for systems without Nix
+install.sh    for systems without Nix, VERSION its one source of version
+completions/  tab completion for install.sh, drift-checked against it
+tests/        run.sh (fast), distro.sh (containers), check-completions.sh
 ```
 
 ## Changing a colour

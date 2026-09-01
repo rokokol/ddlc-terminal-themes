@@ -1,6 +1,6 @@
 <div align="center">
 
-# ddlc-terminal-themes
+# ddlc-themes
 
 **The Doki Doki Literature Club colours for kitty, btop, matplotlib, Claude Code, opencode and your reports, light and dark** （´ω｀♡%）
 
@@ -13,7 +13,11 @@
 [![palette](https://img.shields.io/badge/colours-ddlc--palette-FF80C0?style=flat)](https://github.com/rokokol/ddlc-palette)
 [![assets](https://img.shields.io/badge/assets-Team_Salvato-FF80C0?style=flat)](ASSETS.md)
 [![license](https://img.shields.io/badge/code-MIT-3DA639?style=flat)](LICENSE)
-[![build](https://github.com/rokokol/ddlc-terminal-themes/actions/workflows/build.yml/badge.svg)](https://github.com/rokokol/ddlc-terminal-themes/actions/workflows/build.yml)
+[![build](https://github.com/rokokol/ddlc-themes/actions/workflows/build.yml/badge.svg)](https://github.com/rokokol/ddlc-themes/actions/workflows/build.yml)
+[![debian](https://github.com/rokokol/ddlc-themes/actions/workflows/distro-debian.yml/badge.svg)](https://github.com/rokokol/ddlc-themes/actions/workflows/distro-debian.yml)
+[![ubuntu](https://github.com/rokokol/ddlc-themes/actions/workflows/distro-ubuntu.yml/badge.svg)](https://github.com/rokokol/ddlc-themes/actions/workflows/distro-ubuntu.yml)
+[![arch](https://github.com/rokokol/ddlc-themes/actions/workflows/distro-arch.yml/badge.svg)](https://github.com/rokokol/ddlc-themes/actions/workflows/distro-arch.yml)
+[![fedora](https://github.com/rokokol/ddlc-themes/actions/workflows/distro-fedora.yml/badge.svg)](https://github.com/rokokol/ddlc-themes/actions/workflows/distro-fedora.yml)
 
 </div>
 
@@ -23,7 +27,7 @@ Came over from my rice, **[rokokol/huix](https://github.com/rokokol/huix)**
 
 ```sh
 # render nothing, install nothing, just look
-nix build github:rokokol/ddlc-terminal-themes && cat result/share/ddlc-terminal-themes/ddlc-kitty-dark.conf
+nix build github:rokokol/ddlc-themes && cat result/share/ddlc-themes/ddlc-kitty-dark.conf
 ```
 
 ## Contents
@@ -60,10 +64,10 @@ nix build github:rokokol/ddlc-terminal-themes && cat result/share/ddlc-terminal-
 
 ```nix
 {
-  inputs.ddlc-terminal-themes.url = "github:rokokol/ddlc-terminal-themes";
+  inputs.ddlc-themes.url = "github:rokokol/ddlc-themes";
 
   # in your home configuration
-  imports = [ inputs.ddlc-terminal-themes.homeManagerModules.default ];
+  imports = [ inputs.ddlc-themes.homeManagerModules.default ];
 
   ddlc.kitty.enable = true;
   ddlc.btop.enable = true;
@@ -85,21 +89,39 @@ One switch per application, because each is wired up differently and the wiring 
 
 The last three have no `variant`: each application picks its own — matplotlib names a style per chart, Claude Code lists its themes directory in `/theme`, opencode reads the variant out of the file by the terminal's background. None of them touches the application's own config, so the selection stays yours; and a declaratively deployed theme is a read-only store link, so if you would rather keep the files editable in place, skip the switch and use `install.sh` below — it copies plain files
 
-**Without the module.** `lib.kitty.{light,dark}`, `lib.btop.{light,dark}`, `lib.matplotlib.{light,dark,cmaps}`, `lib.claude-code.{light,dark}`, `lib.opencode` and `lib.report` are paths, so `readFile` or a `source =` places them yourself; `packages.default` lays the same files under `share/ddlc-terminal-themes/`
+**Without the module.** `lib.kitty.{light,dark}`, `lib.btop.{light,dark}`, `lib.matplotlib.{light,dark,cmaps}`, `lib.claude-code.{light,dark}`, `lib.opencode` and `lib.report` are paths, so `readFile` or a `source =` places them yourself; `packages.default` lays the same files under `share/ddlc-themes/`
 
 The report stylesheet has no switch at all: it belongs next to a report, not in `~/.config`, so copy `dist/ddlc-report.css` (or take `lib.report`) and `<link>` it — one file carries both variants, light by default, dark under `prefers-color-scheme`, an explicit `data-theme="dark|light"` winning over both
 
 ### Any other distribution
 
 ```sh
-git clone https://github.com/rokokol/ddlc-terminal-themes
-cd ddlc-terminal-themes
+git clone https://github.com/rokokol/ddlc-themes
+cd ddlc-themes
 ./install.sh              # --component kitty|btop|matplotlib|claude-code|opencode for one of them
 ```
 
 Nothing is built: [`dist/`](dist) is committed, so this is a copy into `~/.config` — except the Claude Code themes, which land in `~/.claude/themes/` because that is where the application looks (`--claude-home` moves it). kitty gets both variants next to `kitty.conf`, where `include ddlc-kitty-dark.conf` resolves; matplotlib keeps its filenames, because they are the API — `plt.style.use("ddlc")`, `import ddlc_cmaps`. The rest list a theme under its file name, so the app segment is dropped on the way in: `ddlc-btop-dark.theme` lands as `ddlc-dark.theme`, the Claude Code pair as `ddlc-dark.json` and `ddlc-light.json`, and `ddlc-opencode.json` as `ddlc.json`
 
-Package recipes can stage another config root without duplicating the layout: `DESTDIR="$pkgdir" ./install.sh --config-home /usr/share/ddlc-terminal-themes`. Add `--component kitty` or `--component btop` for split packages
+Nothing is ever installed behind your back: the script needs only coreutils, and if even that is missing it names what and how to get it, exactly, for your distribution. The applications being themed are not dependencies — a warning if one is absent, and the theme installs anyway
+
+Every path written is recorded in `~/.config/ddlc-themes/install-manifest`, so the install is reversible, per component or whole:
+
+```sh
+./install.sh --uninstall --component btop   # take one application's themes out
+./install.sh --uninstall                    # take everything out
+```
+
+Components are additive — installing one never touches another — but re-running one converges it: a file a previous install of that component wrote and this run does not is swept away
+
+Tab completion for the installer's own flags is sourced from the checkout:
+
+```sh
+source completions/install.sh.bash   # bash
+source completions/install.sh.zsh   # zsh
+```
+
+Package recipes can stage another config root without duplicating the layout: `DESTDIR="$pkgdir" ./install.sh --config-home /usr/share/ddlc-themes`. Add `--component kitty` or `--component btop` for split packages
 
 ## Where the slots go
 
@@ -136,7 +158,9 @@ The colours come from ddlc-palette and nothing else does — the palette is meas
 
 ## Tests
 
-`nix flake check` proves that `dist/` is what `generate.sh` writes today, that every value in it is a hex colour the palette actually holds (down to every opencode reference resolving against its `defs`), that the module wires every application up (and touches none while disabled), and that the two scripts pass shellcheck and shfmt
+`nix flake check` proves that `dist/` is what `generate.sh` writes today, that every value in it is a hex colour the palette actually holds (down to every opencode reference resolving against its `defs`), that the module wires every application up (and touches none while disabled), that every shell file passes shellcheck and shfmt with the completions in step with `install.sh`, and it runs `tests/run.sh` — the installer's whole contract: manifest, per-component sweep, selective uninstall, staging, the refusal path
+
+`tests/distro.sh <distro>` (needs docker or podman) runs the full cycle inside a real `debian`, `ubuntu`, `arch` or `fedora` container: preflight, its printed guidance run verbatim, install, selective uninstall, uninstall. In CI that is the four distro badges — on push, weekly against `:latest`, never on pull requests
 
 ## Layout
 
@@ -144,5 +168,7 @@ The colours come from ddlc-palette and nothing else does — the palette is meas
 generate.sh   the mapping: base16 slots and palette colours in, the themes out
 nix/          module.nix, module-test.nix
 dist/         the rendered themes, committed for consumers without Nix
-install.sh    for systems without Nix
+install.sh    for systems without Nix; VERSION is the one source of version
+completions/  tab completion for install.sh, sourced from the checkout
+tests/        run.sh (fast, sandboxed), distro.sh (containers), check-completions.sh
 ```
