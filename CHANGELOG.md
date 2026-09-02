@@ -2,6 +2,12 @@
 
 Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioned by [semver](https://semver.org/spec/v2.0.0.html)
 
+## [Unreleased]
+
+### Added
+
+- `ddlc-report.css` speaks the inform level: `--ddlc-inform-ground` and `--ddlc-inform-border` (a dot ground under the ink with a blush frame in light, yuriShadow under a yuri frame on dark), plus a `.ddlc-inform` class shaped like the game's own dialog box — framed on all sides, everything centred, the ink doing the talking. Consumers that were rebuilding this from the raw palette's character names can now read it from the stylesheet like every other role
+
 ## [2.0.0] - 2026-09-01
 
 ### Changed

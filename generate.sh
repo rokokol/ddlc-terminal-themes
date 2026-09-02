@@ -359,6 +359,8 @@ css_light_tokens() {
   --ddlc-accent-live: #${pal[pink]};
   --ddlc-code-ground: #${pal[dot]};
   --ddlc-selection: #${pal[blush]};
+  --ddlc-inform-ground: #${pal[dot]};
+  --ddlc-inform-border: #${pal[blush]};
   --ddlc-series-1: #${pal[plum]};
   --ddlc-series-2: #${pal[bow]};
   --ddlc-series-3: #${pal[rule]};
@@ -378,6 +380,8 @@ css_dark_tokens() {
   --ddlc-accent-live: #${pal[blush]};
   --ddlc-code-ground: #${pal[yuriShadow]};
   --ddlc-selection: #${pal[yuri]};
+  --ddlc-inform-ground: #${pal[yuriShadow]};
+  --ddlc-inform-border: #${pal[yuri]};
   --ddlc-series-1: #${pal[plum]};
   --ddlc-series-2: #${pal[bow]};
   --ddlc-series-3: #${pal[rule]};
@@ -393,7 +397,10 @@ EOF
   echo "   A dark report gets three series where a light one gets five — the palette is"
   echo "   polarised, and the other two do not survive on ink; there --ddlc-series-4 and -5"
   echo "   collapse into the muted grey on purpose, so a tail that was not folded into the"
-  echo "   remaining three is visible but stops pretending to be a series */"
+  echo "   remaining three is visible but stops pretending to be a series."
+  echo "   The inform block is the game's own dialog box: a dot ground under the ink"
+  echo "   with a blush frame in light, yuriShadow under a yuri frame on dark — the"
+  echo "   level lives in the frame, not in a hue the palette does not have */"
   echo
   echo ":root {"
   css_light_tokens
@@ -488,6 +495,18 @@ blockquote {
   padding-left: 1rem;
   border-left: 3px solid var(--ddlc-accent);
   color: var(--ddlc-muted);
+}
+
+/* The one block allowed to interrupt, shaped like the game's own dialog box:
+   a pink ground framed on all sides, everything centred, the ink doing the
+   talking */
+.ddlc-inform {
+  background: var(--ddlc-inform-ground);
+  border: 2px solid var(--ddlc-inform-border);
+  border-radius: 6px;
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+  color: var(--ddlc-ink);
 }
 
 figcaption, .ddlc-muted {

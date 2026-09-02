@@ -4,7 +4,10 @@
    A dark report gets three series where a light one gets five — the palette is
    polarised, and the other two do not survive on ink; there --ddlc-series-4 and -5
    collapse into the muted grey on purpose, so a tail that was not folded into the
-   remaining three is visible but stops pretending to be a series */
+   remaining three is visible but stops pretending to be a series.
+   The inform block is the game's own dialog box: a dot ground under the ink
+   with a blush frame in light, yuriShadow under a yuri frame on dark — the
+   level lives in the frame, not in a hue the palette does not have */
 
 :root {
   --ddlc-ground: #FFFFFF;
@@ -16,6 +19,8 @@
   --ddlc-accent-live: #DD77BB;
   --ddlc-code-ground: #FFDBF0;
   --ddlc-selection: #FFBDE1;
+  --ddlc-inform-ground: #FFDBF0;
+  --ddlc-inform-border: #FFBDE1;
   --ddlc-series-1: #BB5599;
   --ddlc-series-2: #CC0C29;
   --ddlc-series-3: #6868B4;
@@ -34,6 +39,8 @@
     --ddlc-accent-live: #FFBDE1;
     --ddlc-code-ground: #361B39;
     --ddlc-selection: #6C4681;
+    --ddlc-inform-ground: #361B39;
+    --ddlc-inform-border: #6C4681;
     --ddlc-series-1: #BB5599;
     --ddlc-series-2: #CC0C29;
     --ddlc-series-3: #6868B4;
@@ -52,6 +59,8 @@
   --ddlc-accent-live: #FFBDE1;
   --ddlc-code-ground: #361B39;
   --ddlc-selection: #6C4681;
+  --ddlc-inform-ground: #361B39;
+  --ddlc-inform-border: #6C4681;
   --ddlc-series-1: #BB5599;
   --ddlc-series-2: #CC0C29;
   --ddlc-series-3: #6868B4;
@@ -137,6 +146,18 @@ blockquote {
   padding-left: 1rem;
   border-left: 3px solid var(--ddlc-accent);
   color: var(--ddlc-muted);
+}
+
+/* The one block allowed to interrupt, shaped like the game's own dialog box:
+   a pink ground framed on all sides, everything centred, the ink doing the
+   talking */
+.ddlc-inform {
+  background: var(--ddlc-inform-ground);
+  border: 2px solid var(--ddlc-inform-border);
+  border-radius: 6px;
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+  color: var(--ddlc-ink);
 }
 
 figcaption, .ddlc-muted {
